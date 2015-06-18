@@ -12,6 +12,8 @@
 var SCREEN_SIZE = 640;
 var canvas;
 var context;
+var sysDebugFont;
+var frameCount;
 
 /**
  * window.onload
@@ -26,7 +28,9 @@ window.onload = function () {
     canvas.style.width = canvas.style.height = SCREEN_SIZE + 'px';
     context = canvas.getContext('2d');
     context.fillStyle = 'rgb(211, 85, 149)';
-    update(); 
+    sysDebugFont = new DebugFont(context);
+    frameCount = 0;
+    update();  
 };
 
 
@@ -34,10 +38,17 @@ window.onload = function () {
  * 更新関数
 */
 function update() {
+    frameCount++;
+
+    // デバッグ表示
+    sysDebugFont.drawText(0, 0, "hello javascript!!");
+    sysDebugFont.drawText(0, 16, "sysDebugFont Test!! 日本語です//123456789");
+    sysDebugFont.drawText(0, 32, "frame count" + frameCount);
+
     // 更新処理
     draw();
     // ミリ秒後に再帰処理をしてループする
-    setTimeout(update, 16.666);
+    setTimeout(update, 1000/60);
 };
 
 /**
@@ -46,8 +57,6 @@ function update() {
 function draw() {
     // キャンバスの描画処理
     context.clearRect(0, 0, SCREEN_SIZE, SCREEN_SIZE);
-
-    context.font = 'italic 16px Arial';
-    context.fillStyle = "white";
-    context.fillText("hello javascript", 0, 16, 12);
+    // デバッグフォント描画処理
+    sysDebugFont.update();
 };

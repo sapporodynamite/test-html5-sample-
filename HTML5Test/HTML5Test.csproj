@@ -57,8 +57,10 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="HtmlPage1.html" />
+    <Content Include="html\HtmlPage1.html" />
     <Content Include="sample.js" />
+    <Content Include="html\simpleDebugFont.html" />
+    <Content Include="system.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
