@@ -54,3 +54,129 @@ DebugFont.prototype.drawText = function (x, y, text) {
     var t = new Text(x, y + 16, text);
     this.textList.push(t);
 }
+
+var FuncCallFook = function () {
+    var self = this;
+    self.listeners = [];
+    self.fook = function (object, name) {
+        name = name || object.constructor;
+        for (property in object) {
+            if (typeof object[property] == "function") {
+                if (name == property) {
+                    object[property] = function (name_, property_, method_) {
+                        return function () {
+                            self.notifyBeforeCall(name_, property_);
+                            var retval = method_.apply(this, arguments);
+                            self.notifyAfterCall(name_, property_);
+                            return retval;
+                        };
+                    }(name, property, object[property]);
+                }
+            }
+        }
+    }
+
+    self.notifyBeforeCall = function (name, property) {
+        self.observing = false;
+        for (var i = 0; i < self.listeners.length; i++) {
+            self.listeners[i].beforeCall(name, property);
+        }
+        self.observing = true;
+    }
+    self.notifyAfterCall = function (name, property) {
+        self.observing = false;
+        for (var i = 0; i < self.listeners.length; i++) {
+            self.listeners[i].afterCall(name, property);
+        }
+        self.observing = true;
+    }
+    self.addListener = function (listener) {
+        self.listeners.push(listener);
+    }
+    self.startObserve = function () {
+        self.observing = true;
+    }
+    self.stopObserve = function () {
+        self.observing = false;
+    }
+};
+
+var FuncCallObserver = function () {
+    var self = this;
+    self.listeners = [];
+    self.observing = false;
+    self.observe = function (object, name) {
+        name = name || object.constructor;
+        for (property in object) {
+            if (typeof object[property] == "function") {
+                object[property] = function (name_, property_, method_) {
+                    return function () {
+                        if (self.observing) {
+                            self.notifyBeforeCall(name_, property_);
+                        }
+                        var rv = method_.apply(this, arguments);
+                        if (self.observing) {
+                            self.notifyAfterCall(name_, property_);
+                        }
+                        return rv;
+                    }
+                }(name, property, object[property]);
+            }
+        }
+    }
+    self.notifyBeforeCall = function (name, property) {
+        self.observing = false;
+        for (var i = 0; i < self.listeners.length; i++) {
+            self.listeners[i].beforeCall(name, property);
+        }
+        self.observing = true;
+    }
+    self.notifyAfterCall = function (name, property) {
+        self.observing = false;
+        for (var i = 0; i < self.listeners.length; i++) {
+            self.listeners[i].afterCall(name, property);
+        }
+        self.observing = true;
+    }
+    self.addListener = function (listener) {
+        self.listeners.push(listener);
+    }
+    self.startObserve = function () {
+        self.observing = true;
+    }
+    self.stopObserve = function () {
+        self.observing = false;
+    }
+};
+
+var Profiler = function () {
+    var self = this;
+    self.records = {};
+    self.start = null;
+    self.beforeCall = function (name, property) {
+        self.start = new Date;
+    }
+    self.afterCall = function (name, property) {
+        var key = name + "::" + property;
+        if (typeof self.records[key] == "undefined") {
+            self.records[key] = [];
+        }
+        self.records[key].push((new Date) - self.start);
+    }
+}
+
+var ProfilerNano = function () {
+    var self = this;
+    self.records = {};
+    self.start = null;
+    self.beforeCall = function (name, property) {
+        self.start = performance.now();
+    }
+    self.afterCall = function (name, property) {
+        var key = name + "::" + property;
+        if (typeof self.records[key] == "undefined") {
+            self.records[key] = [];
+        }
+        self.records[key].push(performance.now() - self.start);
+    }
+};

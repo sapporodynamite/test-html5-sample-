@@ -14,6 +14,12 @@ var canvas;
 var context;
 var sysDebugFont;
 var frameCount;
+var o = new FuncCallObserver;
+var s = new Profiler;
+var p = new ProfilerNano;
+o.addListener(s);
+var o2 = new FuncCallFook;
+o2.addListener(p);
 
 /**
  * window.onload
@@ -30,6 +36,9 @@ window.onload = function () {
     context.fillStyle = 'rgb(211, 85, 149)';
     sysDebugFont = new DebugFont(context);
     frameCount = 0;
+    o.observe(window, "update2");
+    o.startObserve();
+    o2.fook(window, "update");
     update();  
 };
 
