@@ -9,7 +9,8 @@
 // 複数行のコメントは /** ..*/ を使用してください。
 
 // グローバル変数の宣言
-var SCREEN_SIZE = 640;
+var SCREEN_WIDTH = 640;
+var SCREEN_HEIGHT = 360;
 var canvas;
 var context;
 var sysDebugFont;
@@ -22,6 +23,7 @@ var o2 = new FuncCallFook;
 o2.addListener(p);
 var sysTimer;
 var cpuTime;
+var sysDebugPrim;
 
 /**
  * window.onload
@@ -32,17 +34,19 @@ var cpuTime;
 */
 window.onload = function () {
     canvas = document.getElementById('scene1');
-    canvas.width = canvas.height = SCREEN_SIZE;
-    canvas.style.width = canvas.style.height = SCREEN_SIZE + 'px';
+    canvas.width = SCREEN_WIDTH;
+    canvas.height = SCREEN_HEIGHT;
+    canvas.style.width = SCREEN_WIDTH + 'px';
+    canvas.style.height = SCREEN_HEIGHT + 'px';
     context = canvas.getContext('2d');
     context.fillStyle = 'rgb(211, 85, 149)';
     sysDebugFont = new DebugFont(context);
+    sysDebugPrim = new DebugPrim(context);
     sysTimer = new Timer();
     frameCount = 0;
     cpuTime = 0;
-    o.observe(window, "update2");
-    o.startObserve();
-    o2.fook(window, "update");
+
+    var c = Color(0,0,0,0);
     update();  
 };
 
@@ -60,11 +64,19 @@ function update() {
     // デバッグ表示
     sysDebugFont.drawText(0, 0, "hello javascript!!");
     sysDebugFont.drawText(0, 16, "sysDebugFont Test!! 日本語です//123456789");
-    sysDebugFont.drawText(0, 32, "frame count: " + frameCount);
+    sysDebugFont.drawText(0, 32, "frame count: " + sysTimer.getFrameCount());
     sysDebugFont.drawText(0, 48, "elapsed Time: " + sysTimer.getElapsedTime());
     sysDebugFont.drawText(0, 64, "delta Time: " + sysTimer.getDeltaTime());
     sysDebugFont.drawText(0, 80, "delta Rate: " + sysTimer.getDeltaRate());
     sysDebugFont.drawText(0, 96, "FPS: " + sysTimer.getFPS());
+
+    // デバッグライン
+    sysDebugPrim.drawLine(Vec2(0, 0), Vec2(200, 200), Color(255, 0, 0, 0));
+    sysDebugPrim.drawLine(Vec2(50, 0), Vec2(200, 200), Color(255, 0, 0, 0));
+    sysDebugPrim.drawLine(Vec2(0, 0), Vec2(50, 200), Color(255, 255, 255, 0));
+
+    // デバッグプリミティブ描画更新
+    sysDebugPrim.update();
 
     // タイマーシステム更新
     //sysTimer.update();
@@ -76,7 +88,7 @@ function update() {
     sysTimer.stop();
 
     // ミリ秒後に再帰処理をしてループする
-    setTimeout(update, 1000 / 60);
+    setTimeout(update, 1000/60);
 };
 
 /**
@@ -84,7 +96,16 @@ function update() {
 */
 function draw() {
     // キャンバスの描画処理
-    context.clearRect(0, 0, SCREEN_SIZE, SCREEN_SIZE);
+
+    // 画面クリア
+    context.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    context.beginPath();
+    context.fillStyle = "rgb(100, 100, 100)";
+    context.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    context.closePath();
+
     // デバッグフォント描画処理
     sysDebugFont.update();
+    // デバッグプリミティブ描画処理
+    sysDebugPrim.draw();
 };

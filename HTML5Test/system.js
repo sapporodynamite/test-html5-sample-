@@ -35,9 +35,12 @@ function DebugFont(context) {
 */
 DebugFont.prototype.update = function () {
     // 更新関数
+    this.context.beginPath();
+    this.context.fillStyle = "rgb(255, 255, 255)";
     for (var i = 0; i < this.textList.length; i++) {
         this.context.fillText(this.textList[i].text, this.textList[i].x, this.textList[i].y);
     }
+    this.context.closePath();
     // リスト削除
     if (this.textList.length > 0) {
         this.textList.splice(0, this.textList.length);
@@ -59,12 +62,13 @@ DebugFont.prototype.drawText = function (x, y, text) {
 
 function Timer() {
     var self = this;
-    self.startTime = null;
-    self.endTime = null;
-    self.elapsedTime = null;
-    self.deltaTime = null;
-    self.deltaRate = null;
-    self.fps = null;
+    self.startTime = 0;
+    self.endTime = 0;
+    self.elapsedTime = 0;
+    self.deltaTime = 0;
+    self.deltaRate = 0;
+    self.fps = 0;
+    self.frameCount = 0;
 };
 
 // タイマー関数 
@@ -91,7 +95,7 @@ Timer.prototype.start = function () {
  *
  */
 Timer.prototype.stop = function () {
-    //this.endTime = performance.now();
+    this.frameCount++;
 };
 
 /**
@@ -139,6 +143,125 @@ Timer.prototype.getDeltaRate = function () {
  */
 Timer.prototype.getFPS = function () {
     return this.fps;
+};
+
+/**
+ * 起動時からの経過フレーム数を返す
+ */
+Timer.prototype.getFrameCount = function () {
+    return this.frameCount;
+};
+
+// ベクトル 2 クラス
+function Vec2(x, y) {
+    if (!(this instanceof Vec2)) {
+        return new Vec2(x, y);
+    };
+    this.x = x;
+    this.y = y;
+};
+
+// Force a hex value to have 2 characters
+function pad2(c) {
+    return c.length == 1 ? '0' + c : '' + c;
+}
+
+// カラークラス
+function Color(r, g, b, a) {
+    if (!(this instanceof Color)) {
+        return new Color(r, g, b, a);
+    }
+
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.a = a;
+    this.hex = [
+        pad2(Math.round(r).toString(16)),
+        pad2(Math.round(g).toString(16)),
+        pad2(Math.round(b).toString(16))
+    ].join("");
+};
+
+/**
+ * 文字列型の色を返す
+ *
+ */
+Color.prototype.toHexString = function () {
+    return '#' + this.hex; 
+};
+
+
+// デバッグプリミティブラインクラス
+function DebugPrimLine(v0, v1, color) {
+    this.v0 = v0;
+    this.v1 = v1;
+    this.color = color;
+};
+
+// デバッグプリミティブクラス
+function DebugPrim(context) {
+    // プロパティー
+    this.context = context;
+    // Array オブジェクトを作成する
+    this.lineList = new Array();
+    // 描画オブジェクトを作成する
+    this.drawLineList = null;
+};
+
+/**
+ * 更新関数
+ *
+ *
+ *
+ */
+DebugPrim.prototype.update = function () {
+    if (this.lineList.length > 0) {
+        // 描画リストの作成
+        this.drawLineList = {};
+        for (var l = 0; l < this.lineList.length; l++) {
+            var name = this.lineList[l].color.toHexString();
+            // 新カラーの場合はオブジェクトを生成する
+            if (typeof this.drawLineList[name] == "undefined") {
+                this.drawLineList[name] = new Object();
+                this.drawLineList[name].list = new Array();
+            }
+            this.drawLineList[name].list.push(this.lineList[l]);
+        }
+    }
+};
+
+/**
+ * 描画関数
+ *
+ *
+ */
+DebugPrim.prototype.draw = function () {
+    if (this.lineList.length > 0) {
+        for (var l in this.drawLineList) {
+            // 色ごとに描画開始
+            this.context.beginPath();
+            for (var k = 0; k < this.drawLineList[l].list.length; k++) {
+                this.context.moveTo(this.drawLineList[l].list[k].v0.x, this.drawLineList[l].list[k].v0.y);
+                this.context.lineTo(this.drawLineList[l].list[k].v1.x, this.drawLineList[l].list[k].v1.y);
+                this.context.strokeStyle = this.drawLineList[l].list[k].color.toHexString();
+            }
+            this.context.closePath();
+            this.context.stroke();
+        }
+        // リスト中身を削除
+        this.lineList.splice(0, this.lineList.length);
+    }
+}
+
+/**
+ * ライン描画関数
+ *
+ *
+ */
+DebugPrim.prototype.drawLine = function (v0, v1, color) {
+    var line = new DebugPrimLine(v0, v1, color);
+    this.lineList.push(line);
 };
 
 
