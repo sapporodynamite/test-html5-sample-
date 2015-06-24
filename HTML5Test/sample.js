@@ -20,6 +20,8 @@ var p = new ProfilerNano;
 o.addListener(s);
 var o2 = new FuncCallFook;
 o2.addListener(p);
+var sysTimer;
+var cpuTime;
 
 /**
  * window.onload
@@ -35,7 +37,9 @@ window.onload = function () {
     context = canvas.getContext('2d');
     context.fillStyle = 'rgb(211, 85, 149)';
     sysDebugFont = new DebugFont(context);
+    sysTimer = new Timer();
     frameCount = 0;
+    cpuTime = 0;
     o.observe(window, "update2");
     o.startObserve();
     o2.fook(window, "update");
@@ -47,17 +51,32 @@ window.onload = function () {
  * 更新関数
 */
 function update() {
+
+    // 必ずフレームの先頭
+    sysTimer.start();
+
     frameCount++;
 
     // デバッグ表示
     sysDebugFont.drawText(0, 0, "hello javascript!!");
     sysDebugFont.drawText(0, 16, "sysDebugFont Test!! 日本語です//123456789");
-    sysDebugFont.drawText(0, 32, "frame count" + frameCount);
+    sysDebugFont.drawText(0, 32, "frame count: " + frameCount);
+    sysDebugFont.drawText(0, 48, "elapsed Time: " + sysTimer.getElapsedTime());
+    sysDebugFont.drawText(0, 64, "delta Time: " + sysTimer.getDeltaTime());
+    sysDebugFont.drawText(0, 80, "delta Rate: " + sysTimer.getDeltaRate());
+    sysDebugFont.drawText(0, 96, "FPS: " + sysTimer.getFPS());
 
-    // 更新処理
+    // タイマーシステム更新
+    //sysTimer.update();
+
+    // 描画処理
     draw();
+
+    // 必ずフレームの最後
+    sysTimer.stop();
+
     // ミリ秒後に再帰処理をしてループする
-    setTimeout(update, 1000/60);
+    setTimeout(update, 1000 / 60);
 };
 
 /**

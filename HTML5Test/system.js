@@ -55,6 +55,93 @@ DebugFont.prototype.drawText = function (x, y, text) {
     this.textList.push(t);
 }
 
+// タイマークラス
+
+function Timer() {
+    var self = this;
+    self.startTime = null;
+    self.endTime = null;
+    self.elapsedTime = null;
+    self.deltaTime = null;
+    self.deltaRate = null;
+    self.fps = null;
+};
+
+// タイマー関数 
+
+/**
+ * タイマー計測開始
+ *
+ */ 
+Timer.prototype.start = function () {
+    this.startTime = this.endTime;
+    this.endTime = performance.now();
+    // CPU時間の経過時間の測定
+    this.elapsedTime = this.endTime - this.startTime;
+    // デルタ時間の計測
+    this.deltaTime = this.elapsedTime / 1000.0;
+    // デルタレートの計測
+    this.deltaRate = this.deltaTime / (1.0 / 60.0);
+    // FPSの計測
+    this.fps = (1.0 / this.deltaRate ) * 60.0;
+};
+
+/**
+ * タイマー計測終了
+ *
+ */
+Timer.prototype.stop = function () {
+    //this.endTime = performance.now();
+};
+
+/**
+ * 更新関数
+ *
+ * システムの更新関数から毎フレーム実行される関数
+ * FPS計測,ゲーム時間の計測などゲームのタイマー回りの更新を行う
+ *
+ */
+Timer.prototype.update = function () {
+    // CPU時間の経過時間の測定
+    //this.elapsedTime = this.startTime - this.endTime;
+};
+
+/**
+ * タイマー計測結果を返す
+ * 得られる単位はミリ秒です。(分解能はマイクロ秒）
+ * 1000ms = 1秒
+ *   16ms = 約1/60秒
+ */
+Timer.prototype.getElapsedTime = function () {
+    return this.elapsedTime;
+};
+
+
+/**
+ * デルタ時間の結果を返す
+ *
+ */
+Timer.prototype.getDeltaTime = function () {
+    return this.deltaTime;
+};
+
+/**
+ * デルタレートの結果を返す
+ *
+ */
+Timer.prototype.getDeltaRate = function () {
+    return this.deltaRate;
+};
+
+/**
+ * FPSの結果を返す
+ *
+ */
+Timer.prototype.getFPS = function () {
+    return this.fps;
+};
+
+
 var FuncCallFook = function () {
     var self = this;
     self.listeners = [];
@@ -180,3 +267,4 @@ var ProfilerNano = function () {
         self.records[key].push(performance.now() - self.start);
     }
 };
+
