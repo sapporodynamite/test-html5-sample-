@@ -21,7 +21,7 @@ function DebugFont(context) {
     // Array オブジェクトを作成する
     this.textList = new Array();
     // 
-    this.context.font = 'italic 16px Arial';
+    this.context.font = "14px 'ＭＳ ゴシック'";
     this.context.fillStyle = "white";
 };
 
@@ -191,11 +191,27 @@ Color.prototype.toHexString = function () {
     return '#' + this.hex; 
 };
 
+// 矩形クラス
+function Rect(x, y, width, height) {
+    if (!(this instanceof Rect)) {
+        return new Rect(x,y,width,height);
+    };
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+};
 
 // デバッグプリミティブラインクラス
 function DebugPrimLine(v0, v1, color) {
     this.v0 = v0;
     this.v1 = v1;
+    this.color = color;
+};
+
+// デバッグプリミティブ矩形クラス
+function DebugPrimRect(rect, color) {
+    this.rect = rect;
     this.color = color;
 };
 
@@ -205,8 +221,10 @@ function DebugPrim(context) {
     this.context = context;
     // Array オブジェクトを作成する
     this.lineList = new Array();
+    this.rectList = new Array();
     // 描画オブジェクトを作成する
     this.drawLineList = null;
+    this.drawRectList = null;
 };
 
 /**
@@ -252,6 +270,16 @@ DebugPrim.prototype.draw = function () {
         // リスト中身を削除
         this.lineList.splice(0, this.lineList.length);
     }
+    if (this.rectList.length > 0) {
+        this.context.beginPath();
+        for (var i = 0; i < this.rectList.length; i++) {
+            this.context.fillStyle = this.rectList[i].color.toHexString();
+            this.context.fillRect(this.rectList[i].rect.x, this.rectList[i].rect.y, this.rectList[i].rect.width, this.rectList[i].rect.height);
+        }
+        this.context.closePath();
+        // リスト中身を削除
+        this.rectList.splice(0, this.rectList.length);
+    } 
 }
 
 /**
@@ -264,6 +292,16 @@ DebugPrim.prototype.drawLine = function (v0, v1, color) {
     this.lineList.push(line);
 };
 
+/**
+ * 矩形描画関数
+ *
+ *
+ *
+ */
+DebugPrim.prototype.drawRect = function (rect, color) {
+    var r = new DebugPrimRect(rect, color);
+    this.rectList.push(r);
+}; 
 
 var FuncCallFook = function () {
     var self = this;

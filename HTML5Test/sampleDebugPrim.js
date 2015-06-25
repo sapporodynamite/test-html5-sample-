@@ -11,19 +11,13 @@
 // グローバル変数の宣言
 var SCREEN_WIDTH = 640;
 var SCREEN_HEIGHT = 360;
+var FRAME_RATE_ARRAY_LIST = SCREEN_HEIGHT - 100;
 var canvas;
 var context;
 var sysDebugFont;
-var frameCount;
-var o = new FuncCallObserver;
-var s = new Profiler;
-var p = new ProfilerNano;
-o.addListener(s);
-var o2 = new FuncCallFook;
-o2.addListener(p);
-var sysTimer;
-var cpuTime;
 var sysDebugPrim;
+var sysTimer;
+var frameRateArray;
 
 /**
  * window.onload
@@ -43,9 +37,8 @@ window.onload = function () {
     sysDebugFont = new DebugFont(context);
     sysDebugPrim = new DebugPrim(context);
     sysTimer = new Timer();
-    frameCount = 0;
-    cpuTime = 0;
-    update();  
+    frameRateArray = new Array();
+    update();
 };
 
 
@@ -57,21 +50,31 @@ function update() {
     // 必ずフレームの先頭
     sysTimer.start();
 
-    frameCount++;
-
-    // デバッグ表示
-    sysDebugFont.drawText(0, 0, "hello javascript!!");
-    sysDebugFont.drawText(0, 16, "sysDebugFont Test!! 日本語です//123456789//新世界より//悪の教典//クリムゾンの迷宮");
-    sysDebugFont.drawText(0, 32, "frame count: " + sysTimer.getFrameCount());
-    sysDebugFont.drawText(0, 48, "elapsed Time: " + sysTimer.getElapsedTime());
-    sysDebugFont.drawText(0, 64, "delta Time: " + sysTimer.getDeltaTime());
-    sysDebugFont.drawText(0, 80, "delta Rate: " + sysTimer.getDeltaRate());
-    sysDebugFont.drawText(0, 96, "FPS: " + sysTimer.getFPS());
+    // リスト以上の場合は 配列から要素を取り除く
+    if (frameRateArray.length > FRAME_RATE_ARRAY_LIST) {
+        frameRateArray.shift();
+    }
+    frameRateArray.push(sysTimer.getDeltaRate());
 
     // デバッグライン
-    sysDebugPrim.drawLine(Vec2(0, 0), Vec2(200, 200), Color(255, 0, 0, 0));
-    sysDebugPrim.drawLine(Vec2(50, 0), Vec2(200, 200), Color(255, 0, 0, 0));
-    sysDebugPrim.drawLine(Vec2(0, 0), Vec2(50, 200), Color(255, 255, 255, 0));
+    sysDebugPrim.drawLine(Vec2(0, 25), Vec2(200, 25), Color(255, 0, 0, 0));
+    sysDebugPrim.drawLine(Vec2(50, 50), Vec2(100, 50), Color(255, 255, 255, 0));
+
+    // フレームレートデバッグ
+    {
+        sysDebugPrim.drawLine(Vec2(50, 310), Vec2(50, 340), Color(255, 255, 255, 0));
+        sysDebugPrim.drawLine(Vec2(SCREEN_WIDTH - 50, 310), Vec2(SCREEN_WIDTH - 50, 340), Color(255, 255, 255, 0));
+
+        if (frameRateArray.length > 2) {
+            for (var i = 0; i < frameRateArray.length - 1; i++) {
+                var x0 = (i / FRAME_RATE_ARRAY_LIST) * (SCREEN_WIDTH-100);
+                var y0 = (frameRateArray[(frameRateArray.length-1)-i] * 30.0) - 30.0;
+                var x1 = ((i + 1) / FRAME_RATE_ARRAY_LIST) * (SCREEN_WIDTH - 100);
+                var y1 = (frameRateArray[(frameRateArray.length-1)-(i+1)] * 30.0) - 30.0;
+                sysDebugPrim.drawLine(Vec2(50 + x0, 325 + y0), Vec2(50 + x1, 325 + y1), Color(255, 255, 255, 0));
+            }
+        }
+    }
 
     // デバッグレクト
     sysDebugPrim.drawRect(Rect(25, 200, 100, 100), Color(50, 50, 50, 0));
@@ -90,7 +93,7 @@ function update() {
     sysTimer.stop();
 
     // ミリ秒後に再帰処理をしてループする
-    setTimeout(update, 1000/60);
+    setTimeout(update, 1000 / 60);
 };
 
 /**

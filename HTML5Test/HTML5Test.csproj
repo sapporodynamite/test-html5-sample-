@@ -58,10 +58,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="html\HtmlPage1.html" />
+    <Content Include="html\sampleDebugPrim.html" />
     <Content Include="html\sampleTimer.html" />
     <Content Include="sampleDebugFont.js" />
     <Content Include="sample.js" />
     <Content Include="html\sampleDebugFont.html" />
+    <Content Include="sampleDebugPrim.js" />
     <Content Include="sampleTimer.js" />
     <Content Include="system.js" />
     <Content Include="Web.config" />
